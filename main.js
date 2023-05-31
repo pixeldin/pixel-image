@@ -1,14 +1,27 @@
 const path = require('path');
-const { app,BrowserWindow,Menu } = require('electron');
+const os = require('os');
+const fs = require('fs');
+const resizeImg = require('resize-img');
+const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
+
+// process.env.NODE_ENV = 'dev';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+let mainWindow;
+
 function createMainWindow() {
-    const mainWindow = new BrowserWindow({
-    title: 'Image Resizer',
-    width: isDev? 1000 : 500,
-    height: 600,
-    icon: `${__dirname}/assets/icons/Icon_256x256.png`,
+    mainWindow = new BrowserWindow({
+        resizable: isDev,
+        title: 'Image Resizer',
+        width: isDev ? 1000 : 500,
+        height: 600,
+        webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: true,
+            preload: path.join(__dirname, 'preload.js')
+        },
+        icon: `${__dirname}/assets/icons/Icon_256x256.png`,
     });
 
     // Show devtools automatically if in development
@@ -21,13 +34,24 @@ function createMainWindow() {
 
 function createAboutWindow() {
     const aboutWindow = new BrowserWindow({
-    title: 'About Image Resizer',
-    width: 300,
-    height: 300,
+        title: 'About Image Resizer',
+        width: 300,
+        height: 300,
     });
 
     aboutWindow.loadFile(path.join(__dirname, './renderer/about.html'));
 }
+
+app.on('ready', () => {
+    createMainWindow();
+
+    // implement menu
+    const mainMenu = Menu.buildFromTemplate(menu);
+    Menu.setApplicationMenu(mainMenu);
+
+    // remove mainWindow from mem on close
+    mainWindow.on('close', () => (mainWindow = null))
+});
 
 const menu = [
     {
@@ -49,12 +73,46 @@ const menu = [
             }
         ],
     },
+    {
+        label: 'Developer',
+        submenu: [
+            { role: 'reload' },
+            { role: 'forcereload' },
+            { type: 'separator' },
+            { role: 'toggledevtools' },
+        ],
+    },
 ];
 
-app.whenReady().then(() => {
-    createMainWindow();
-
-    // implement menu
-    const mainMenu = Menu.buildFromTemplate(menu);
-    Menu.setApplicationMenu(mainMenu);
+ipcMain.on('image:resize', (e, options) => {
+    options.dest = path.join(os.homedir(), 'imageresizer');
+    resizeImage(options);
 });
+
+async function resizeImage({ imgPath, width, height, dest }) {
+    try {
+        const newPath = await resizeImg(fs.readFileSync(imgPath), {
+            width: +width,
+            height: +height,
+        });
+
+        // create filename
+        const filename = path.basename(imgPath);
+
+        // create filename if not exists
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest);
+        }
+
+        // save file
+        fs.writeFileSync(path.join(dest, filename), newPath);
+
+        // send success
+        mainWindow.webContents.send('image:done');
+
+        // show file folder
+        shell.openPath(dest);
+    } catch (error) {
+        console.log(error)
+    }
+}
