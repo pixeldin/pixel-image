@@ -660,7 +660,8 @@ video {
 
 .bg-teal-700 {
   --tw-bg-opacity: 1;
-  background-color: rgb(15 118 110 / var(--tw-bg-opacity));
+  background: -webkit-linear-gradient(bottom left, #bd430bde 0, #bba06b 100%);
+  /* background-color: rgb(15 118 110 / var(--tw-bg-opacity)); */
 }
 
 .bg-white {
@@ -670,7 +671,8 @@ video {
 
 .bg-teal-500 {
   --tw-bg-opacity: 1;
-  background-color: rgb(20 184 166 / var(--tw-bg-opacity));
+  background: -webkit-linear-gradient(bottom left, #81e232de 0, #b3a928 100%);
+  /* background-color: rgb(20 184 166 / var(--tw-bg-opacity)); */
 }
 
 .p-3 {
