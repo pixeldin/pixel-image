@@ -9,6 +9,7 @@ const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const isDev = process.env.NODE_ENV !== 'production';
 
 let mainWindow;
+let aboutWindow;
 
 function createMainWindow() {
     mainWindow = new BrowserWindow({
@@ -33,10 +34,11 @@ function createMainWindow() {
 }
 
 function createAboutWindow() {
-    const aboutWindow = new BrowserWindow({
+    aboutWindow = new BrowserWindow({
         title: 'About Image Resizer',
         width: 300,
         height: 300,
+        icon: `${__dirname}/assets/icons/Icon_256x256.png`,
     });
 
     aboutWindow.loadFile(path.join(__dirname, './renderer/about.html'));
@@ -116,3 +118,13 @@ async function resizeImage({ imgPath, width, height, dest }) {
         console.log(error)
     }
 }
+
+// Quit when all windows are closed.
+app.on('window-all-closed', () => {
+    app.quit();
+});
+
+// Open a window if none are open (macOS)
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+});

@@ -23,18 +23,27 @@ function loadImage(e) {
 
     // console.log('It is an image');
     form.style.display = 'block';
-    filename.innerText = file.name;
+    filename.innerHTML = file.name;
     outputPath.innerText = path.join(os.homedir(), 'imageresizer');
 }
 
 function sendImage(e) {
     e.preventDefault();
+
+    // judge logic
+    if (!img.files[0]) {
+        alertError('Please upload an image');
+        return;
+      }
+    
+    if (widthInput.value === '' || heightInput.value === '') {
+    alertError('Please enter a width and height');
+    return;
+    }
     
     const width = widthInput.value;
     const height = heightInput.value;
     const imgPath = img.files[0].path;
-
-    // judge logic
 
     // send to main using ipcRenderer
     ipcRenderer.send('image:resize', {
