@@ -34,13 +34,13 @@ function sendImage(e) {
     if (!img.files[0]) {
         alertError('Please upload an image');
         return;
-      }
-    
-    if (widthInput.value === '' || heightInput.value === '') {
-    alertError('Please enter a width and height');
-    return;
     }
-    
+
+    if (widthInput.value === '' || heightInput.value === '') {
+        alertError('Please enter a width and height');
+        return;
+    }
+
     const width = widthInput.value;
     const height = heightInput.value;
     const imgPath = img.files[0].path;
@@ -64,6 +64,7 @@ function isFileImage(file) {
 }
 
 function alertSuccess(message) {
+    console.log("[Info]: "+message)
     Toastify.toast({
         text: message,
         duration: 5000,
@@ -77,6 +78,7 @@ function alertSuccess(message) {
 }
 
 function alertError(message) {
+    console.log("[Error]: "+message)
     Toastify.toast({
         text: message,
         duration: 5000,
